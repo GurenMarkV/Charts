@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Visualized Flight Data</title>
+
+    {% include 'defaults/css.html' %}
+    {% include 'defaults/bootstrap_defaults.html' %}
+  </head>
+  <body>
+    <div class='container'>
+    {% block content %}
+    {% endblock content %}
+    </div>
+    {% include 'defaults/js.html' %}
+    <script>
+    $(document).ready(function(){
+      {% block jquery %}{% endblock %}
+      
+    })
+    </script>
+  </body>
+</html>

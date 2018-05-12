@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+
+<script>
+{% block jquery %}
+var endpoint = '/temp/line'
+
+
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+        console.log(data)
+    },
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data)
+    }
+})
+
+
+
+var axi ={
+      labels: {{meter}},
+      datasets: [
+        {
+          label: "X-Axis",
+          fill: true,
+          backgroundColor: "rgba(255,250,194,0.2)",
+          borderColor: "rgba(255,233,9,1)",
+          pointRadius: 0,
+          data: {{accx}}
+        }, {
+          label: "Y-Axis",
+          fill: true,
+          backgroundColor: "rgba(217, 223, 255,0.2)",
+          borderColor: "rgba(137, 195, 255,1)",
+          pointRadius: 0,
+          data: {{accy}}
+        }, {
+          label: "Z-Axis",
+          fill: true,
+          backgroundColor: "rgba(255, 226, 226,0.2)",
+          borderColor: "rgba(255,99,132,1)",
+          pointRadius: 0,
+          data: {{accz}}
+        }
+      ]
+    }
+
+  
+
+
+new Chart(document.getElementById("linechart"), {
+    type: 'line',
+    data: {
+      labels: {{meter}},
+      datasets: [{ 
+          data: {{temp}},
+          label: "Temperature",
+          borderColor: "rgba(233, 0, 255, 0.702)",
+          backgroundColor: "rgba(248, 165, 226, 0.3)",
+          fill: true,
+          pointRadius: 0,
+          yAxisID: 'left-y-axis'
+        },
+        { 
+          data: {{pressure}},
+          label: "Pressure",
+          borderColor: "#3e95cd",
+          fill: true,
+          backgroundColor: "rgba(1, 217, 255, 0.702)",
+          pointRadius: 0,
+          yAxisID: 'right-y-axis',
+        }],
+      
+    },
+    options: {
+      scales: {
+            yAxes: [{
+                id: 'left-y-axis',
+                type: 'linear',
+                position: 'left'
+            }, {
+                id: 'right-y-axis',
+                type: 'linear',
+                position: 'right'
+            }]
+        },
+      title: {
+        display: true,
+        text: 'Analysis of Temperature and Altitude Data from Flights'
+      }
+    }
+  });
+
+var ct2 = document.getElementById('linechart2').getContext("2d");
+var gradientStroke = ct2.createLinearGradient(500, 0, 100, 0);
+gradientStroke.addColorStop(0, "#f49080");
+gradientStroke.addColorStop(1, "#80b6f4");
+
+var line2 = new Chart(ct2, {
+  type: 'bar',
+  data: {
+    labels: {{meter}},
+    datasets: [{ 
+        data: {{pressure}},
+        label: "Pressure",
+        borderColor: gradientStroke,
+        borderWidth: 3,
+        fill: true
+      }, 
+    ]
+  },
+  options: {
+    title: {
+      display: true,
+      text: 'Analysis of Pressure and Altitude Data from Flights'
+    }
+  }
+});
+
+var ctx = "radarchart";
+var myRadar = new Chart(ctx, {
+    type: 'radar',
+    data: axi,
+    options: {
+
+      // title: {
+      //   display: true,
+      //   text: 'Distribution in % of world population',
+      // }
+      scale: {
+        pointLabels: {
+          callback: function(value, index, values) {
+                        return "";
+                    },
+      	fontSize: 7,
+        autoSkip: true		
+      }
+      
+    }
+    
+    
+}
+});
+
+var ct3 = "lineaxi";
+var lineaxis = new Chart(ct3, {
+    type: 'line',
+    data: axi,
+    options: {
+
+      // title: {
+      //   display: true,
+      //   text: 'Distribution in % of world population',
+      // }
+    }
+
+});
+
+var tempalt = {
+  type: 'line',
+  data: {
+    labels: {{meter}},
+    datasets: [{
+      label: "Recorded Temperature",
+      fill: false,
+      borderColor: "#0BFF19",
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+      borderDash: [5, 5],
+      pointRadius: 0,
+      fill: true,
+      cubicInterpolationMode: "default",
+      data: {{temp}},
+    }, {
+      label: "Calculated Temperature",
+      fill: true,
+      backgroundColor: "rgba(235, 245, 251,0.3)",
+      borderColor: "#FF0B0B",
+      cubicInterpolationMode: "default",
+      pointRadius: 0,
+      data: {{temp2}},
+
+    }]
+  },
+  options: {
+   responsive: true,
+     title:{
+     display:true,
+     text:'Temperature vs Altitude'
+     },
+   tooltips: {
+   mode: 'index',
+   intersect: false,
+    },
+   hover: {
+   intersect: true
+  },
+            }
+};
+
+
+var timealt = {
+  type: 'line',
+  data: {
+    labels: {{time}},
+    datasets: [{
+      label: "Recorded Time",
+      fill: false,
+      borderColor: "rgb(110, 44, 0)",
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+      borderWidth: 5,
+      pointRadius: 0,
+      fill: false,
+      cubicInterpolationMode: "default",
+      data: {{meter}},
+    },]
+  },
+  options:{
+    responsive: true,
+     title:{
+     display:true,
+     text:'Altitude vs Time',
+     },
+  },
+};
+
+window.onload = function() {
+            var ct4 = "tempAlt";
+            window.myLine = new Chart(ct4, tempalt);
+            var ct5 = "timeAlt";
+            window.myLine = new Chart(ct5, timealt);
+        };
+
+document.getElementById('replaceGravity').addEventListener('click', function() {
+      axi.datasets[0].data = {{gx}};
+      axi.datasets[1].data = {{gy}};
+      axi.datasets[2].data = {{gz}};
+			console.log(myRadar.data);
+      myRadar.update();
+      lineaxis.update();
+    });
+
+
+document.getElementById('replaceGyro').addEventListener('click', function() {
+      axi.datasets[0].data = {{gyx}};
+      axi.datasets[1].data = {{gyy}};
+      axi.datasets[2].data = {{gyz}};
+			console.log(line2.data);
+      myRadar.update();
+      lineaxis.update();
+    });
+
+
+document.getElementById('replaceAcc').addEventListener('click', function() {
+      axi.datasets[0].data = {{accx}};
+      axi.datasets[1].data = {{accy}};
+      axi.datasets[2].data = {{accz}};
+			console.log(line2.data);
+      myRadar.update();
+      lineaxis.update();
+    });
+
+
+
+
+
+
+
+
+
+{% endblock %}
+</script>
+
+{% block content %}
+<html>
+<body style = "background-color:rgb(14, 26, 82);">
+
+        <div class="row">
+
+        <div class="col-12 col-md-8"><canvas id="linechart" width="100" height="50"></canvas></div>
+        <div class="col-6 col-md-4"><canvas id="linechart2" width="100" height="100"></canvas></div>
+      </div>
+
+    
+      
+
+     
+      <div class="row">
+        <div class="col-6 col-md-4"><canvas id="tempAlt" width="400" height="300"></canvas></div>
+        <div class="col-6 col-md-4"> <div id="chart"></div></div>
+        <div class="col-6 col-md-4"><canvas id="timeAlt" width="400" height="300"></div>
+      </div>
+      
+
+      <h1 align="center" ><font face="Verdana">Deviation in XYZ Axis</font></h1><br>
+
+     
+      <div class="row">
+        <div class="col-sm-1">
+            <button id="replaceGravity">Gravity Data</button><br><br>
+            <button id="replaceGyro">Gyroscope Data</button>   <br><br>
+            <button id="replaceAcc">Accelerometer Data</button>
+
+
+        </canvas></div>
+        <div class="col-sm-5"><canvas id="radarchart" width="600" height="450"></canvas></div>
+        <div class="col-sm-6"><canvas id="lineaxi" width="400" height="300"></canvas></div>
+      </div>      
+
+          
+          <br><br>
+
+     
+
+
+
+
+
+        
+
+
+
+        <html>
+          <head>
+
+            <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+            <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js"></script>
+            <script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js"></script>
+          </head>
+          <body>
+            <div id="body">
+              
+            </div>
+            <script type="text/javascript">
+        
+        function norm() {
+          var res, i;
+          res = {{gy}}[Math.floor(Math.random()*{{gy}}.length)]
+          return res;
+        }
+        
+        var w = 500,
+            h = 500;
+        
+        var nodes = d3.range(400).map(function() { 
+          var true_y = (norm()*50)+250;
+          return {
+            radius: 4, 
+            y: true_y,
+            true_x: 250,
+            true_y: true_y }
+          });
+        
+        var force = d3.layout.force()
+            .gravity(0)
+            .charge(0)
+            .friction(0.9)
+            .nodes(nodes)
+            .size([w, h]);
+        
+        var root = nodes[0];
+        root.radius = 0;
+        root.fixed = true;
+        
+        force.start();
+        
+        var svg = d3.select("#chart").append("svg:svg")
+            .attr("width", w)
+            .attr("height", h);
+        
+        svg.selectAll("circle")
+            .data(nodes)
+          .enter().append("svg:circle")
+            .attr("r", function(d) { return d.radius; })
+            .style("fill", 'steelblue')
+            .style("stroke", "black");
+        
+        force.on("tick", function(e) {
+          var q,
+            node,
+            i = 0,
+            n = nodes.length;
+            
+          var q = d3.geom.quadtree(nodes);
+        
+          while (++i < n) {
+            node = nodes[i];
+            q.visit(collide(node));
+            xerr = node.x - node.true_x;
+            yerr = node.y - node.true_y;
+            node.x -= xerr*0.005;
+            node.y -= yerr*0.8;
+          }
+          
+        
+        
+          svg.selectAll("circle")
+              .attr("cx", function(d) { return d.x; })
+              .attr("cy", function(d) { return d.y; });
+        });
+        
+        function collide(node) {
+          var r = node.radius,
+            nx1,
+            nx2,
+            ny1,
+            ny2,
+            xerr,
+            yerr;
+            
+          nx1 = node.x - r;
+          nx2 = node.x + r;
+          ny1 = node.y - r;
+          ny2 = node.y + r;
+              
+          return function(quad, x1, y1, x2, y2) {
+            if (quad.point && (quad.point !== node)) {
+              var x = node.x - quad.point.x,
+                  y = node.y - quad.point.y,
+                  l = Math.sqrt(x * x + y * y),
+                  r = node.radius + quad.point.radius;
+              if (l < r) {
+                // we're colliding.
+                var xnudge, ynudge, nudge_factor;
+                nudge_factor = (l - r) / l * .4;
+                xnudge = x*nudge_factor;
+                ynudge = y*nudge_factor;
+                node.x -= xnudge;
+                node.y -= ynudge;
+                quad.point.x += xnudge;
+                quad.point.y += ynudge;
+              }
+            }
+            return x1 > nx2
+                || x2 < nx1
+                || y1 > ny2
+                || y2 < ny1;
+          };
+        }
+        
+            </script>
+        
+          </body>
+        </html>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+        
+
+
+
+
+
+</body>
+</html>
+
+<style>
+    canvas{
+      /* width: 100% !important;
+      max-width: 8000px;
+      height: auto !important; */
+      background-color:rgba(14, 26, 82,0.1)
+  }
+
+  .container{
+      width: 100% !important;
+      max-width: 1800px;
+      height: auto !important;
+      background-color:rgb(14, 26, 82) 
+  }
+  
+
+  button {
+    background-color: rgb(255, 161, 161); /* Green */
+    border: black;
+    color: rgb(12, 3, 3);
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+button:hover {
+    background-color: rgb(156, 157, 252); /* Green */
+    color: white;
+}
+
+body {
+
+color: white;
+}
+</style>
+
+{% endblock content %}
